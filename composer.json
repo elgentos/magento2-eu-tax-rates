@@ -1,0 +1,54 @@
+{
+    "name": "elgentos/module-eu-tax-rates",
+    "description": "Magento 2 extension to import EU taxes into Magento.",
+    "type": "magento2-module",
+    "license": "OSL-3.0",
+    "authors": [
+        {
+            "name": "Arjen Miedema",
+            "email": "arjen@elgentos.nl"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": "^7.4||^8.0",
+        "magento/framework": "^103.0",
+        "magento/module-tax": "^100.4",
+        "magento/module-directory": "^100.4"
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://repo.magento.com/"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Elgentos\\EuTaxRates\\": "src/"
+        },
+        "files": [
+            "src/registration.php"
+        ]
+    },
+    "require-dev": {
+        "mediact/testing-suite": "^2.9",
+        "mediact/coding-standard-magento2": "@stable"
+    },
+    "archive": {
+        "exclude": [
+            "/.gitignore",
+            "/grumphp.yml",
+            "/pdepend.xml",
+            "/phpstan.neon",
+            "/phpunit.xml",
+            "/phpcs.xml",
+            "/phpmd.xml",
+            "/package.json",
+            "/.eslintrc.json",
+            "/.eslintignore"
+        ]
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

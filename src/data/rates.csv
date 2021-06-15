@@ -1,0 +1,33 @@
+code,tax_country_id,tax_region_id,tax_postcode,rate,zip_is_range,zip_from,zip_to,type
+Austria (standard),AT,,,20,,,,STANDARD
+Belgium (standard),BE,,,21,,,,STANDARD
+Bulgaria (standard),BG,,,20,,,,STANDARD
+Croatia (standard),HR,,,25,,,,STANDARD
+Cyprus (standard),CY,,,19,,,,STANDARD
+Czech Republic (standard),CZ,,,21,,,,STANDARD
+Denmark (standard),DK,,,25,,,,STANDARD
+Estonia (standard),EE,,,20,,,,STANDARD
+Finland (standard),FI,,,24,,,,STANDARD
+France (standard),FR,,,20,,,,STANDARD
+Germany (standard),DE,,,19,,,,STANDARD
+Greece (standard),GR,,,24,,,,STANDARD
+Hungary (standard),HU,,,27,,,,STANDARD
+Ireland (standard),IE,,,23,,,,STANDARD
+Italy (standard),IT,,,22,,,,STANDARD
+Latvia (standard),LV,,,21,,,,STANDARD
+Lithuania (standard),LT,,,21,,,,STANDARD
+Luxembourg (standard),LU,,,17,,,,STANDARD
+Malta (standard),MT,,,18,,,,STANDARD
+Netherlands (standard),NL,,,21,,,,STANDARD
+Poland (standard),PL,,,23,,,,STANDARD
+Portugal (standard),PT,,,23,,,,STANDARD
+Romania (standard),RO,,,19,,,,STANDARD
+Slovakia (standard),SK,,,20,,,,STANDARD
+Slovenia (standard),SI,,,22,,,,STANDARD
+Spain (standard),ES,,,21,,,,STANDARD
+Spain (Tenerife) (standard),ES,Santa Cruz de Tenerife,,0,,,,STANDARD
+Spain (Las Palmas) (standard),ES,Las Palmas,*,0,,,,STANDARD
+Spain (Melilla) (standard),ES,Melilla,,0,,,,STANDARD
+Spain (Ceuta) (standard),ES,Ceuta,*,0,,,,STANDARD
+Sweden (standard),SE,,,25,,,,STANDARD
+United Kingdom (standard),GB,,,20,,,,STANDARD
