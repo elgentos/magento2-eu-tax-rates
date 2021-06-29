@@ -3,6 +3,9 @@
 This Magento 2 module makes it possible to import a CSV file containing all the tax rates for all countries in the EU. 
 It will also create the related tax rules used in Magento with some basic configuration. 
 
+## Rates
+You can find the current rates [here](https://github.com/elgentos/magento2-eu-tax-rates/blob/main/src/data/rates.csv).
+
 ## Installation
 
 This package can be installed using [Composer](https://getcomposer.com):
