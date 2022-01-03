@@ -30,6 +30,11 @@
             "src/registration.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Elgentos\\EuTaxRates\\Test\\": "tests/"
+        }
+    },
     "require-dev": {
         "mediact/testing-suite": "^2.9",
         "mediact/coding-standard-magento2": "@stable"
