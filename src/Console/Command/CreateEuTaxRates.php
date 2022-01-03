@@ -11,9 +11,11 @@ namespace Elgentos\EuTaxRates\Console\Command;
 
 use Exception;
 use Magento\Directory\Model\Region;
+use Magento\Directory\Model\ResourceModel\Region\Collection as RegionCollection;
 use Magento\Directory\Model\ResourceModel\Region\CollectionFactory as RegionCollectionFactory;
 use Magento\Framework\Component\ComponentRegistrar;
 use Magento\Framework\Component\ComponentRegistrarInterface;
+use Magento\Framework\Console\Cli;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\File\Csv as CsvFileReader;
 use Magento\Tax\Model\Calculation\Rate;
@@ -21,7 +23,9 @@ use Magento\Tax\Model\Calculation\RateFactory;
 use Magento\Tax\Model\Calculation\RateRepository;
 use Magento\Tax\Model\Calculation\RuleFactory;
 use Magento\Tax\Model\ClassModel;
+use Magento\Tax\Model\ResourceModel\Calculation\Rate\Collection as RateCollection;
 use Magento\Tax\Model\ResourceModel\Calculation\Rate\CollectionFactory as RateCollectionFactory;
+use Magento\Tax\Model\ResourceModel\Calculation\Rule\Collection as RuleCollection;
 use Magento\Tax\Model\ResourceModel\Calculation\Rule\CollectionFactory as RuleCollectionFactory;
 use Magento\Tax\Model\ResourceModel\TaxClass\CollectionFactory as TaxClassCollectionFactory;
 use Magento\Tax\Model\TaxRuleRepository;
@@ -32,56 +36,32 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class CreateEuTaxRates extends Command
 {
-    private const TAX_RATES_CSV_FILE = 'data/rates.csv';
+    private const TAX_RATES_CSV_FILE = 'data/rates.csv',
+        COMMAND_NAME                 = 'elgentos:eutaxes:create',
+        COMMAND_DESCRIPTION          = 'Generate and install the tax rates for the whole EU.';
 
-    /** @var CsvFileReader */
     private CsvFileReader $csvFileReader;
 
-    /** @var ComponentRegistrarInterface */
     private ComponentRegistrarInterface $componentRegistrar;
 
-    /** @var RateFactory */
     private RateFactory $taxRateFactory;
 
-    /** @var RateCollectionFactory */
     private RateCollectionFactory $rateCollection;
 
-    /** @var RateRepository */
     private RateRepository $rateRepository;
 
-    /** @var RuleFactory */
     private RuleFactory $ruleFactory;
 
-    /** @var RuleCollectionFactory */
     private RuleCollectionFactory $ruleCollection;
 
-    /** @var TaxRuleRepository */
     private TaxRuleRepository $ruleRepository;
 
-    /** @var TaxClassCollectionFactory */
     private TaxClassCollectionFactory $taxClassCollection;
 
-    /** @var RegionCollectionFactory */
     private RegionCollectionFactory $regionCollection;
 
-    /** @var array */
     private array $taxRules = [];
 
-    /**
-     * Constructor.
-     *
-     * @param CsvFileReader               $csvFileReader
-     * @param ComponentRegistrarInterface $componentRegistrar
-     * @param RateFactory                 $taxRateFactory
-     * @param RateCollectionFactory       $rateCollection
-     * @param RateRepository              $rateRepository
-     * @param RuleCollectionFactory       $ruleCollection
-     * @param RuleFactory                 $ruleFactory
-     * @param TaxRuleRepository           $ruleRepository
-     * @param TaxClassCollectionFactory   $taxClassCollection
-     * @param RegionCollectionFactory     $regionCollectionFactory
-     * @param string|null                 $name
-     */
     public function __construct(
         CsvFileReader $csvFileReader,
         ComponentRegistrarInterface $componentRegistrar,
@@ -106,36 +86,34 @@ class CreateEuTaxRates extends Command
         $this->taxClassCollection = $taxClassCollection;
         $this->regionCollection   = $regionCollectionFactory;
 
-        parent::__construct($name);
+        parent::__construct($name ?? self::COMMAND_NAME);
     }
 
-    /**
-     * @return void
-     */
     protected function configure(): void
     {
         $options = [
             new InputOption(
                 'reset',
-                null,
+                'r',
                 InputOption::VALUE_OPTIONAL,
                 'Reset (remove) the existing rates?'
+            ),
+            new InputOption(
+                'file',
+                'f',
+                InputOption::VALUE_OPTIONAL,
+                'Fetch the rates from a custom file'
             )
         ];
 
-        $this->setName('elgentos:eutaxes:create')
-            ->setDescription('Generate and install the tax rates for the whole EU.')
+        $this->setDescription(self::COMMAND_DESCRIPTION)
             ->setDefinition($options);
     }
 
     /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     *
-     * @return int
      * @throws Exception
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($input->getOption('reset')) {
             $output->writeln('Reset and remove all previously installed tax rates and rules');
@@ -143,7 +121,7 @@ class CreateEuTaxRates extends Command
             $this->resetAllTaxRules();
         }
 
-        $rates = $this->getTaxRates();
+        $rates = $this->getTaxRates($input->getOption('file'));
 
         $output->writeln(
             sprintf('Found %d taxrates to import', count($rates))
@@ -168,51 +146,45 @@ class CreateEuTaxRates extends Command
         );
         $this->createTaxRules();
 
-        return 0;
+        return Cli::RETURN_SUCCESS;
     }
 
     /**
-     * @return array
      * @throws Exception
      */
-    private function getTaxRates(): array
+    private function getTaxRates(?string $file): array
     {
         $data = [];
 
-        try {
+        if (!$file) {
             $moduleDir = $this->componentRegistrar->getPath(
                 ComponentRegistrar::MODULE,
                 'Elgentos_EuTaxRates'
             );
+            $file      = $moduleDir . '/' . self::TAX_RATES_CSV_FILE;
+        }
 
-            $content     = $this->csvFileReader->getData($moduleDir . '/' . self::TAX_RATES_CSV_FILE);
-            $keys        = [];
-            $isFirstLine = true;
+        $content     = $this->csvFileReader->getData($file);
+        $keys        = [];
+        $isFirstLine = true;
 
-            foreach ($content as $row) {
-                if ($isFirstLine) {
-                    $keys        = $row;
-                    $isFirstLine = false;
+        foreach ($content as $row) {
+            if ($isFirstLine) {
+                $keys        = $row;
+                $isFirstLine = false;
 
-                    continue;
-                }
-
-                $data[] = array_combine($keys, $row);
+                continue;
             }
-        } catch (Exception $e) {
-            echo $e->getMessage();
+
+            $data[] = array_combine($keys, $row);
         }
 
         return $data;
     }
 
-    /**
-     * @param string $code
-     *
-     * @return int
-     */
     private function rateAlreadyExists(string $code): int
     {
+        /** @var RateCollection $collection */
         $collection = $this->rateCollection->create();
 
         /** @var Rate $rate */
@@ -222,11 +194,9 @@ class CreateEuTaxRates extends Command
         return (int) $rate->getId();
     }
 
-    /**
-     * @return void
-     */
     private function resetAllTaxRates(): void
     {
+        /** @var RateCollection $collection */
         $collection = $this->rateCollection->create();
 
         /** @var int $id */
@@ -239,11 +209,9 @@ class CreateEuTaxRates extends Command
         }
     }
 
-    /**
-     * @return void
-     */
     private function resetAllTaxRules(): void
     {
+        /** @var RuleCollection $collection */
         $collection = $this->ruleCollection->create();
 
         foreach ($collection->getAllIds() as $id) {
@@ -256,15 +224,12 @@ class CreateEuTaxRates extends Command
     }
 
     /**
-     * @param array $rate
-     *
-     * @return int|null
      * @throws InputException
      */
     protected function storeTaxRate(array $rate): ?int
     {
         $taxRate              = $this->taxRateFactory->create();
-        $rate['tax_postcode'] = empty($rate['tax_postcode']) && empty($rate['zip_is_range'])
+        $rate['tax_postcode'] = empty($rate['tax_postcode'])
             ? '*'
             : $rate['tax_postcode'];
 
@@ -279,7 +244,6 @@ class CreateEuTaxRates extends Command
     }
 
     /**
-     * @return void
      * @throws InputException
      */
     private function createTaxRules(): void
@@ -296,11 +260,6 @@ class CreateEuTaxRates extends Command
         }
     }
 
-    /**
-     * @param string $type
-     *
-     * @return array
-     */
     private function getTaxClassIds(string $type): array
     {
         $collection = $this->taxClassCollection->create();
@@ -309,13 +268,9 @@ class CreateEuTaxRates extends Command
             ->getAllIds();
     }
 
-    /**
-     * @param array $rate
-     *
-     * @return string|int
-     */
-    private function getRegionIdByName(array $rate)
+    private function getRegionIdByName(array $rate): string
     {
+        /** @var RegionCollection $collection */
         $collection = $this->regionCollection->create();
         $collection->addCountryFilter($rate['tax_country_id'])
             ->addRegionCodeFilter($rate['tax_region_id']);
@@ -323,6 +278,6 @@ class CreateEuTaxRates extends Command
         /** @var Region $region */
         $region = $collection->getFirstItem();
 
-        return $region->getId() ?: '';
+        return (string) $region->getId() ?: '';
     }
 }
