@@ -36,8 +36,8 @@
         }
     },
     "require-dev": {
-        "mediact/testing-suite": "^2.9",
-        "mediact/coding-standard-magento2": "@stable"
+        "youwe/coding-standard-magento2": "^1.7.0",
+        "youwe/testing-suite": "@stable"
     },
     "archive": {
         "exclude": [
@@ -54,6 +54,12 @@
         ]
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "magento/composer-dependency-version-audit-plugin": true,
+            "phpro/grumphp-shim": true,
+            "youwe/coding-standard-phpstorm": true,
+            "youwe/testing-suite": true
+        }
     }
 }
